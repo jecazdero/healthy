@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ViewportProvider } from './contexts/ViewportContext';
+import { AssistanceProvider } from './contexts/AssistanceContext';
 import { AppShell } from './components/shell/AppShell';
 import { PlaceholderScreen } from './pages/PlaceholderScreen';
 import { PatientSchedules } from './pages/patient/PatientSchedules';
@@ -19,24 +20,26 @@ function screenElement(role: Role, item: NavItem) {
 function App() {
   return (
     <ViewportProvider>
-      <Routes>
-        <Route path="/" element={<Navigate to={ROLE_HOME.patient} replace />} />
+      <AssistanceProvider>
+        <Routes>
+          <Route path="/" element={<Navigate to={ROLE_HOME.patient} replace />} />
 
-        {(Object.keys(NAV_CONFIG) as Role[]).map((role) => (
-          <Route key={role} path={role} element={<AppShell role={role} />}>
-            <Route index element={<Navigate to={ROLE_HOME[role]} replace />} />
-            {NAV_CONFIG[role].map((item) => (
-              <Route
-                key={item.path}
-                path={item.path.split('/').slice(2).join('/')}
-                element={screenElement(role, item)}
-              />
-            ))}
-          </Route>
-        ))}
+          {(Object.keys(NAV_CONFIG) as Role[]).map((role) => (
+            <Route key={role} path={role} element={<AppShell role={role} />}>
+              <Route index element={<Navigate to={ROLE_HOME[role]} replace />} />
+              {NAV_CONFIG[role].map((item) => (
+                <Route
+                  key={item.path}
+                  path={item.path.split('/').slice(2).join('/')}
+                  element={screenElement(role, item)}
+                />
+              ))}
+            </Route>
+          ))}
 
-        <Route path="*" element={<Navigate to={ROLE_HOME.patient} replace />} />
-      </Routes>
+          <Route path="*" element={<Navigate to={ROLE_HOME.patient} replace />} />
+        </Routes>
+      </AssistanceProvider>
     </ViewportProvider>
   );
 }

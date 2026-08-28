@@ -2,7 +2,9 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { Button } from '../../components/ui/Button';
 import { StatusBadge, type StatusBadgeVariant } from '../../components/ui/StatusBadge';
 import { DragHandle } from '../../components/ui/DragHandle';
+import { NotificationBanner } from '../../components/ui/NotificationBanner';
 import { useViewport } from '../../contexts/ViewportContext';
+import { useAssistance } from '../../contexts/AssistanceContext';
 
 const STATS = [
   { label: 'TOTAL WAITING', value: '12', caption: 'patients in queue' },
@@ -54,10 +56,21 @@ export function NurseWaitingRoom() {
   const isMobile = device === 'mobile';
   const isTablet = device === 'tablet';
   const statValueSize = device === 'desktop' ? 'text-numeral-xl' : 'text-display-md';
+  const { request: assistanceRequest, clearAssistance } = useAssistance();
 
   return (
     <div className="flex flex-col gap-lg">
       <ScreenHeader role="nurse" title="Waiting Room" subtitle="Tuesday, August 18 · 9:42 AM" />
+
+      {assistanceRequest && (
+        <NotificationBanner
+          tone="urgent"
+          icon="emergency_home"
+          message={`${assistanceRequest.patientName} (#${assistanceRequest.queueNumber}) needs immediate assistance — approach patient at ${assistanceRequest.room} now.`}
+          timestamp={assistanceRequest.requestedAt}
+          onDismiss={clearAssistance}
+        />
+      )}
 
       <div className="flex items-center gap-[12px]">
         <Button variant="primary">{isMobile ? '+ Walk-in' : '+ Register Walk-in'}</Button>
