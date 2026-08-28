@@ -1,3 +1,4 @@
+import { useRef, useState, type DragEvent } from 'react';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { Button } from '../../components/ui/Button';
 import { StatusBadge, type StatusBadgeVariant } from '../../components/ui/StatusBadge';
@@ -26,7 +27,7 @@ const DOCTOR_CHIPS: { name: string; status: DoctorStatus; backAt?: string }[] = 
   { name: 'Dr. Patel · Room 2', status: 'Calling next patient' },
 ];
 
-const PATIENTS: {
+const INITIAL_PATIENTS: {
   number: string;
   name: string;
   doctor: string;
@@ -57,6 +58,44 @@ export function NurseWaitingRoom() {
   const isTablet = device === 'tablet';
   const statValueSize = device === 'desktop' ? 'text-numeral-xl' : 'text-display-md';
   const { request: assistanceRequest, clearAssistance } = useAssistance();
+  const [patients, setPatients] = useState(INITIAL_PATIENTS);
+  const [draggedNumber, setDraggedNumber] = useState<string | null>(null);
+  const [dragOverNumber, setDragOverNumber] = useState<string | null>(null);
+  const draggedNumberRef = useRef<string | null>(null);
+  const dragOverNumberRef = useRef<string | null>(null);
+
+  const startDrag = (number: string) => {
+    draggedNumberRef.current = number;
+    setDraggedNumber(number);
+  };
+
+  const handleDragOver = (event: DragEvent, targetNumber: string) => {
+    event.preventDefault();
+    if (draggedNumberRef.current && draggedNumberRef.current !== targetNumber) {
+      dragOverNumberRef.current = targetNumber;
+      setDragOverNumber(targetNumber);
+    }
+  };
+
+  const handleDragEnd = () => {
+    const sourceNumber = draggedNumberRef.current;
+    const targetNumber = dragOverNumberRef.current;
+    if (sourceNumber && targetNumber && sourceNumber !== targetNumber) {
+      setPatients((prev) => {
+        const sourceIndex = prev.findIndex((p) => p.number === sourceNumber);
+        const targetIndex = prev.findIndex((p) => p.number === targetNumber);
+        if (sourceIndex === -1 || targetIndex === -1) return prev;
+        const updated = [...prev];
+        const [moved] = updated.splice(sourceIndex, 1);
+        updated.splice(targetIndex, 0, moved);
+        return updated;
+      });
+    }
+    draggedNumberRef.current = null;
+    dragOverNumberRef.current = null;
+    setDraggedNumber(null);
+    setDragOverNumber(null);
+  };
 
   return (
     <div className="flex flex-col gap-lg">
@@ -113,11 +152,17 @@ export function NurseWaitingRoom() {
       {isMobile ? (
         <div className="flex w-full flex-col gap-sm">
           <h2 className="text-heading-sm text-text-primary">Patients List</h2>
-          {PATIENTS.map((patient) => (
+          {patients.map((patient) => (
             <div
               key={patient.number}
-              className={`flex items-center justify-between gap-sm rounded-lg p-md shadow-sm ${
-                patient.status === 'next-up' ? 'bg-bg-primarySubtle' : 'bg-bg-surface'
+              draggable
+              onDragStart={() => startDrag(patient.number)}
+              onDragOver={(event) => handleDragOver(event, patient.number)}
+              onDragEnd={handleDragEnd}
+              className={`flex cursor-grab items-center justify-between gap-sm rounded-lg p-md shadow-sm transition-colors ${
+                patient.status === 'next-up' ? 'bg-bg-primarySubtle' : 'bg-bg-surface hover:bg-bg-surfaceAlt'
+              } ${draggedNumber === patient.number ? 'opacity-40' : ''} ${
+                dragOverNumber === patient.number ? 'ring-2 ring-inset ring-icon-primary' : ''
               }`}
             >
               <div className="flex items-center gap-sm">
@@ -148,11 +193,17 @@ export function NurseWaitingRoom() {
             <p className={`text-label-sm text-text-tertiary ${COL_WIDTHS.status}`}>STATUS</p>
           </div>
           <div className="divide-y divide-border-default">
-            {PATIENTS.map((patient) => (
+            {patients.map((patient) => (
               <div
                 key={patient.number}
-                className={`flex h-[52px] items-center px-md py-sm ${
-                  patient.status === 'next-up' ? 'bg-bg-primarySubtle' : ''
+                draggable
+                onDragStart={() => startDrag(patient.number)}
+                onDragOver={(event) => handleDragOver(event, patient.number)}
+                onDragEnd={handleDragEnd}
+                className={`flex h-[52px] cursor-grab items-center px-md py-sm transition-colors ${
+                  patient.status === 'next-up' ? 'bg-bg-primarySubtle' : 'hover:bg-bg-surfaceAlt'
+                } ${draggedNumber === patient.number ? 'opacity-40' : ''} ${
+                  dragOverNumber === patient.number ? 'ring-2 ring-inset ring-icon-primary' : ''
                 }`}
               >
                 <div className="flex w-[28px] shrink-0 items-center justify-center">
@@ -180,11 +231,17 @@ export function NurseWaitingRoom() {
             <p className={`text-label-sm text-text-tertiary ${COL_WIDTHS.timeInExam}`}>TIME IN EXAM</p>
           </div>
           <div className="divide-y divide-border-default">
-            {PATIENTS.map((patient) => (
+            {patients.map((patient) => (
               <div
                 key={patient.number}
-                className={`flex h-[52px] items-center px-md py-sm ${
-                  patient.status === 'next-up' ? 'bg-bg-primarySubtle' : ''
+                draggable
+                onDragStart={() => startDrag(patient.number)}
+                onDragOver={(event) => handleDragOver(event, patient.number)}
+                onDragEnd={handleDragEnd}
+                className={`flex h-[52px] cursor-grab items-center px-md py-sm transition-colors ${
+                  patient.status === 'next-up' ? 'bg-bg-primarySubtle' : 'hover:bg-bg-surfaceAlt'
+                } ${draggedNumber === patient.number ? 'opacity-40' : ''} ${
+                  dragOverNumber === patient.number ? 'ring-2 ring-inset ring-icon-primary' : ''
                 }`}
               >
                 <div className="flex w-[28px] shrink-0 items-center justify-center">
