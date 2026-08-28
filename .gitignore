@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Node (app/.gitignore also covers app/node_modules; this is a repo-wide safety net)
+node_modules
+dist
+dist-ssr
+*.local
+*.log
