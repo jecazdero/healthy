@@ -4,6 +4,7 @@ import { AssistanceProvider } from './contexts/AssistanceContext';
 import { AppShell } from './components/shell/AppShell';
 import { PlaceholderScreen } from './pages/PlaceholderScreen';
 import { PatientSchedules } from './pages/patient/PatientSchedules';
+import { PatientHistory } from './pages/patient/PatientHistory';
 import { NurseWaitingRoom } from './pages/nurse/NurseWaitingRoom';
 import { DoctorWaitingRoom } from './pages/doctor/DoctorWaitingRoom';
 import { NAV_CONFIG, ROLE_HOME } from './config/nav';
@@ -12,6 +13,7 @@ import type { Role } from './types';
 
 function screenElement(role: Role, item: NavItem) {
   if (item.path === '/patient/schedules') return <PatientSchedules />;
+  if (item.path === '/patient/history') return <PatientHistory />;
   if (item.path === '/nurse/waiting-room') return <NurseWaitingRoom />;
   if (item.path === '/doctor/waiting-room') return <DoctorWaitingRoom />;
   return <PlaceholderScreen role={role} title={item.label} />;
