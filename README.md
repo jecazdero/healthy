@@ -4,6 +4,10 @@
 
 A real-time queue, capacity, and wait-time management prototype that gives patients, nurses, and doctors at a non-profit community clinic shared visibility into who's waiting, who's next, and who's available.
 
+## Live Prototype
+
+### **[Try it now →](https://healthyp.netlify.app/patient/schedules)**
+
 ## Figma Designs
 
 **[View the full Figma file →](https://www.figma.com/design/wDUfGU27ygEXwE9KA7Bv3t/Healthy?node-id=42-2)**
