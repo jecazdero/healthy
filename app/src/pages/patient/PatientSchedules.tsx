@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { IconButton } from '../../components/ui/IconButton';
 import { Modal } from '../../components/ui/Modal';
 import { useViewport } from '../../contexts/ViewportContext';
 import { useAssistance } from '../../contexts/AssistanceContext';
@@ -21,11 +22,99 @@ const DOCTOR = {
 
 const PATIENT_NAME = 'Maria Torres';
 
+type Schedule = {
+  id: string;
+  date: string;
+  time: string;
+  doctor: string;
+  type: string;
+  status: 'upcoming' | 'completed';
+};
+
+const SCHEDULES: Schedule[] = [
+  { id: '1', date: 'Aug 18, 2026', time: '10:30 AM', doctor: 'Dr. Alvarez', type: 'Follow-up Consultation', status: 'upcoming' },
+  { id: '2', date: 'Aug 25, 2026', time: '2:00 PM', doctor: 'Dr. Chen', type: 'Annual Checkup', status: 'upcoming' },
+  { id: '3', date: 'Sep 9, 2026', time: '9:15 AM', doctor: 'Dr. Alvarez', type: 'Blood Work Review', status: 'upcoming' },
+  { id: '4', date: 'Jul 30, 2026', time: '9:15 AM', doctor: 'Dr. Alvarez', type: 'Blood Work Review', status: 'completed' },
+  { id: '5', date: 'Jun 2, 2026', time: '11:00 AM', doctor: 'Dr. Patel', type: 'Vaccination', status: 'completed' },
+];
+
+function ScheduleRows({ schedules }: { schedules: Schedule[] }) {
+  return (
+    <>
+      {schedules.map((schedule) => (
+        <div key={schedule.id} className="flex items-start gap-[12px] rounded-md bg-bg-surfaceAlt px-[14px] py-sm">
+          <div
+            className={`mt-[7px] h-[8px] w-[8px] shrink-0 rounded-full ${
+              schedule.status === 'upcoming' ? 'bg-icon-primary' : 'bg-border-strong'
+            }`}
+          />
+          <div className="flex flex-col gap-[2px]">
+            <p className="text-body-md text-text-primary">
+              {schedule.date} · {schedule.time}
+            </p>
+            <p className="text-body-sm text-text-secondary">
+              {schedule.doctor} · {schedule.type}
+            </p>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function AllSchedulesDrawer({
+  open,
+  onClose,
+  schedules,
+}: {
+  open: boolean;
+  onClose: () => void;
+  schedules: Schedule[];
+}) {
+  return (
+    <>
+      <div
+        onClick={onClose}
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-[#0d1a1f] transition-opacity duration-300 ${
+          open ? 'opacity-30' : 'pointer-events-none opacity-0'
+        }`}
+      />
+      <div
+        className={`fixed right-0 top-0 z-50 h-full w-[85%] max-w-[360px] overflow-y-auto bg-bg-canvas p-lg shadow-lg transition-transform duration-300 ease-out ${
+          open ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        role="dialog"
+        aria-label="All Schedules"
+        aria-hidden={!open}
+      >
+        <div className="flex flex-col gap-md">
+          <div className="flex items-center justify-between">
+            <p className="text-heading-sm text-text-primary">All Schedules</p>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close All Schedules"
+              className="shrink-0 text-icon-muted transition-colors hover:text-icon-primary"
+            >
+              <span className="material-symbols-rounded !text-[22px]">close</span>
+            </button>
+          </div>
+          <Button variant="primary">Schedule</Button>
+          <ScheduleRows schedules={schedules} />
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function PatientSchedules() {
   const { device } = useViewport();
   const isMobile = device === 'mobile';
   const { requestAssistance } = useAssistance();
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isSchedulesOpen, setIsSchedulesOpen] = useState(false);
 
   function handleRequestAssistance() {
     requestAssistance({
@@ -37,10 +126,8 @@ export function PatientSchedules() {
     setShowConfirmation(true);
   }
 
-  return (
-    <div className="flex flex-col gap-lg">
-      <ScreenHeader role="patient" title="Hi, Maria" subtitle="Tuesday, August 18" />
-
+  const mainContent = (
+    <div className="flex flex-1 min-w-[420px] flex-col gap-lg">
       <Card className="flex flex-col items-center gap-xs text-center">
         <p className="text-label-sm text-text-tertiary">YOUR QUEUE NUMBER</p>
         <p className="text-numeral-xl text-text-primary">{QUEUE.number}</p>
@@ -58,11 +145,19 @@ export function PatientSchedules() {
         </div>
       </div>
 
+      {device !== 'desktop' && (
+        <div className="flex justify-end">
+          <IconButton
+            icon="calendar_month"
+            aria-label="All Schedules"
+            className="border border-border-primary"
+            onClick={() => setIsSchedulesOpen(true)}
+          />
+        </div>
+      )}
+
       {isMobile ? (
         <div className="flex flex-col gap-sm rounded-lg bg-bg-surface p-md shadow-sm">
-          <Button variant="primary" className="w-full">
-            Schedule Appointment
-          </Button>
           <Button variant="secondary" className="w-full">
             Reschedule
           </Button>
@@ -72,7 +167,6 @@ export function PatientSchedules() {
         </div>
       ) : device === 'tablet' ? (
         <div className="flex flex-wrap items-center gap-sm rounded-lg bg-bg-surface p-md shadow-sm">
-          <Button variant="primary">Schedule Appointment</Button>
           <Button variant="secondary">Reschedule</Button>
           <Button variant="urgent-solid" onClick={handleRequestAssistance}>
             Request Immediate Assistance
@@ -80,10 +174,7 @@ export function PatientSchedules() {
         </div>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-sm rounded-lg bg-bg-surface p-md shadow-sm">
-          <div className="flex items-center gap-[12px]">
-            <Button variant="primary">Schedule Appointment</Button>
-            <Button variant="secondary">Reschedule</Button>
-          </div>
+          <Button variant="secondary">Reschedule</Button>
           <Button variant="urgent-solid" onClick={handleRequestAssistance}>
             Request Immediate Assistance
           </Button>
@@ -93,6 +184,35 @@ export function PatientSchedules() {
       <Link to="/patient/history" className="text-label-md text-icon-primary hover:underline">
         → View my visit history &amp; active therapies
       </Link>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-lg">
+      <ScreenHeader role="patient" title="Hi, Maria" subtitle="Tuesday, August 18" />
+
+      {device === 'desktop' ? (
+        <div className="flex w-full min-w-0 flex-wrap items-start gap-xl">
+          {mainContent}
+          <div className="flex min-w-[320px] flex-1 flex-col gap-md">
+            <div className="flex items-center justify-between">
+              <p className="text-heading-sm text-text-primary">All Schedules</p>
+              <Button variant="primary">Schedule</Button>
+            </div>
+            <ScheduleRows schedules={SCHEDULES} />
+          </div>
+        </div>
+      ) : (
+        mainContent
+      )}
+
+      {device !== 'desktop' && (
+        <AllSchedulesDrawer
+          open={isSchedulesOpen}
+          onClose={() => setIsSchedulesOpen(false)}
+          schedules={SCHEDULES}
+        />
+      )}
 
       <Modal open={showConfirmation} onClose={() => setShowConfirmation(false)}>
         <div className="flex flex-col items-center gap-sm text-center">
