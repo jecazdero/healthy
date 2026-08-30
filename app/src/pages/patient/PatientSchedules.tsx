@@ -111,7 +111,6 @@ function AllSchedulesDrawer({
 
 export function PatientSchedules() {
   const { device } = useViewport();
-  const isMobile = device === 'mobile';
   const { requestAssistance } = useAssistance();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSchedulesOpen, setIsSchedulesOpen] = useState(false);
@@ -127,7 +126,18 @@ export function PatientSchedules() {
   }
 
   const mainContent = (
-    <div className="flex flex-1 min-w-[420px] flex-col gap-lg">
+    <div className={`flex flex-1 flex-col gap-lg ${device === 'desktop' ? 'min-w-[420px]' : ''}`}>
+      {device !== 'desktop' && (
+        <div className="flex items-center justify-end">
+          <IconButton
+            icon="calendar_month"
+            aria-label="All Schedules"
+            className="border border-border-primary"
+            onClick={() => setIsSchedulesOpen(true)}
+          />
+        </div>
+      )}
+
       <Card className="flex flex-col items-center gap-xs text-center">
         <p className="text-label-sm text-text-tertiary">YOUR QUEUE NUMBER</p>
         <p className="text-numeral-xl text-text-primary">{QUEUE.number}</p>
@@ -145,41 +155,16 @@ export function PatientSchedules() {
         </div>
       </div>
 
-      {device !== 'desktop' && (
-        <div className="flex justify-end">
-          <IconButton
-            icon="calendar_month"
-            aria-label="All Schedules"
-            className="border border-border-primary"
-            onClick={() => setIsSchedulesOpen(true)}
-          />
-        </div>
-      )}
-
-      {isMobile ? (
-        <div className="flex flex-col gap-sm rounded-lg bg-bg-surface p-md shadow-sm">
-          <Button variant="secondary" className="w-full">
-            Reschedule
-          </Button>
-          <Button variant="urgent-solid" className="w-full" onClick={handleRequestAssistance}>
-            Request Immediate Assistance
-          </Button>
-        </div>
-      ) : device === 'tablet' ? (
-        <div className="flex flex-wrap items-center gap-sm rounded-lg bg-bg-surface p-md shadow-sm">
-          <Button variant="secondary">Reschedule</Button>
-          <Button variant="urgent-solid" onClick={handleRequestAssistance}>
-            Request Immediate Assistance
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-wrap items-center justify-between gap-sm rounded-lg bg-bg-surface p-md shadow-sm">
-          <Button variant="secondary">Reschedule</Button>
-          <Button variant="urgent-solid" onClick={handleRequestAssistance}>
-            Request Immediate Assistance
-          </Button>
-        </div>
-      )}
+      <div
+        className={`flex flex-wrap items-center gap-sm rounded-lg bg-bg-surface p-md shadow-sm ${
+          device === 'desktop' ? 'justify-between' : ''
+        }`}
+      >
+        <Button variant="secondary">Reschedule</Button>
+        <Button variant="urgent-solid" onClick={handleRequestAssistance}>
+          Request Immediate Assistance
+        </Button>
+      </div>
 
       <Link to="/patient/history" className="text-label-md text-icon-primary hover:underline">
         → View my visit history &amp; active therapies
